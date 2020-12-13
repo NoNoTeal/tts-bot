@@ -1,0 +1,28 @@
+{
+  "name": "commandno",
+  "version": "1.2.1",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [],
+  "author": "xTeal#7702",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^7.1.1",
+    "discord.js": "^12.5.1",
+    "node-fetch": "^2.6.1",
+    "node-gyp": "^6.1.0",
+    "systeminformation": "^4.31.1"
+  },
+  "description": "Crappy Discord.JS Commando Replacement",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nonoteal/commandno.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nonoteal/commandno/issues"
+  },
+  "homepage": "https://github.com/nonoteal/commandno#readme"
+}

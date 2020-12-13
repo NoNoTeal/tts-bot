@@ -1,0 +1,17 @@
+{
+    "token": "token",
+    "owners": [""],
+    "prefixes": [""],
+
+    "srcDirname": "xteal",
+
+    "checkBot": ["discord srv bot id"],
+    "markers":["people you trust that can mark people as bad"],
+    
+    "doSqliteManagement": false,
+    "doOwnerCooldowns": false,
+    "doCooldowns": true,
+    "doInBetweenCooldowns": true,
+
+    "respondToBadCommands": false
+}
