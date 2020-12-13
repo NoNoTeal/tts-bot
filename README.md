@@ -7,6 +7,7 @@ Commandno is a crappy version of Discord.JS-Commando but simplified. This is a t
 TTS-bot is a extension of Commandno with personalized Commands for Minecraft Discord Servers that apply to:
 
 a) Has a server-chat channel, or Discord SRV
+
 b) **Hates those goddamn players that come on trying to crash the server**
 
 TTS-bot **warns** you of hazardous players, it doesn't ban. Discord SRV most likely ignores bots so it can't run commands through console-chat...
