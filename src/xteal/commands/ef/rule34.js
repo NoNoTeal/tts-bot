@@ -11,7 +11,6 @@ class r34 extends Command {
             cooldown: 5,
             group:'ef',
             syntax: 'rule34 <term>',
-            channelOnly: ['guild'],
             aliases: ['r34','porn'],
             description: 'Search up an inappropriate term, you fucking animal.',
             nsfw: true,

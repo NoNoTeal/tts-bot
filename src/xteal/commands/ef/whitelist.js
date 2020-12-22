@@ -8,7 +8,6 @@ class whitelist extends Command {
             name: 'whitelist',
             cooldown: 3,
             group:'ef',
-            channelOnly: ['guild'],
             description: 'Mark person as a good person.',
             details: 'Make a person pass the background check automatically. Run this command on a whitelisted person to remove them.',
         })

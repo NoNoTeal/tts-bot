@@ -7,7 +7,6 @@ class test extends Command {
             name: 'mojangstatus',
             cooldown: 5,
             group:'ef',
-            channelOnly: ['guild'],
             description: 'Check Mojang\'s status.',
         })
     }
@@ -27,18 +26,6 @@ class test extends Command {
             r.on('close', () => {
                 try{
                     var statuses = JSON.parse(data);
-                    function RYG(status) {
-                        switch(status.toLowerCase()) {
-                            case 'green':
-                                return 'Service Up';
-                            case 'yellow':
-                                return 'Service Issues';
-                            case 'red':
-                                return 'Service Unavailable';
-                            default:
-                                return 'Undetermined';
-                        }
-                    }
                     function RYGEmotes(status) {
                         switch(status.toLowerCase()) {
                             case 'green':

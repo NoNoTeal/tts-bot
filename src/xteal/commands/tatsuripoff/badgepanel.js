@@ -1,12 +1,12 @@
 var Command = require('../../../util/essentials/Command.js');
 const Discord = require('discord.js');
+const Util = require('../../../util/essentials/Util.js');
 class bm extends Command {
     constructor(client) {
         super(client, {
             name: 'badgemanager',
             cooldown: 5,
             group:'tatsumaki',
-            channelOnly: ['guild'],
             syntax: `badgemanager <user> <emoji> <badge name>`,
             private: true,
             ownerOnly: true,
@@ -19,8 +19,7 @@ class bm extends Command {
      */
     async run(message, args) {
         if(!args.length) return message.channel.send(`📛 **|**You need to put args, see \`${this.syntax}\``)
-        var user;
-        try {if(guild){if(args[0]){var num=/\d+/i.exec(args[0]);if(Array.isArray(num)){var id=(await message.guild.members.fetch(num)).user;if(id){user=id};}var arg=(await message.guild.members.fetch({query:args[0],limit:1})).first().user;if(arg) {user=arg}}}}catch{};
+        var user = await Util.userParsePlus(message, args, 'user');
         if(!user) return message.channel.send(`📛 **|**You didn't put a user! See \`${this.syntax}\``)
         if(user.bot) return message.channel.send(`🗃️ **|** Bots can't have profiles.`);
         let userScore = message.client.getInfo.get(user.id);

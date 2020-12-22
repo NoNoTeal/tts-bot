@@ -10,7 +10,6 @@ class ud extends Command {
             cooldown: 2,
             syntax: 'urban <term>',
             group:'ef',
-            channelOnly: ['guild'],
             reqArgs: true,
             description: 'Search up a term on urban dictionary.',
             aliases: ['ud','urbandictionary']

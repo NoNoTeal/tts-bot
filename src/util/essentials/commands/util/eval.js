@@ -12,6 +12,8 @@
 "use strict";
 const Command = require('./../../Command.js');
 const Discord = require('discord.js');
+const Util = require('./../../Util.js');
+// Util is just for eval
 const fs = require('fs');
 class evaluate extends Command {
     constructor(client) {
@@ -31,18 +33,17 @@ class evaluate extends Command {
     /**
      * @param {Discord.Message} message 
      * @param {string[]} args 
-     * @param {Discord.Guild} guild
      */
-    async run(message, args, guild) {
+    async run(message, args) {
         var args = message.content.split(/\s+/).slice(1).join(" ")
         if(!args.length) return message.channel.send(`Provide code`)
         var embed = new Discord.MessageEmbed()
         .setTitle(`Evaluated`)
-        var client = message.client
-        var bot = message.client
-        var msg = message
-        var channel = message.channel
-        var guild = message.guild
+        var client = message.client,
+            bot = message.client,
+            msg = message,
+            channel = message.channel,
+            guild = message.guild;
         try {
             let evaled = eval(args);
             let hrStart = process.hrtime()

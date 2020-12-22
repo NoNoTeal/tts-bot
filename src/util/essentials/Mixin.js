@@ -19,9 +19,15 @@ module.exports = bot => {
       fs.createWriteStream(`./src/xteal/util-cache/tatsu.sqlite`, {flags: 'a+'});
       console.debug('Created file tatsu.sqlite');
     };
+    if(!fs.existsSync(`./src/xteal/util-cache/fish.sqlite`)) {
+      fs.mkdirSync(`./src/xteal/util-cache`, {recursive: true})
+      fs.createWriteStream(`./src/xteal/util-cache/fish.sqlite`, {flags: 'a+'});
+      console.debug('Created file fish.sqlite');
+    };
 
     var Coins = sqlite(`./src/xteal/util-cache/coins.sqlite`);
     var Info = sqlite(`./src/xteal/util-cache/tatsu.sqlite`);
+    var Fish = sqlite(`./src/xteal/util-cache/fish.sqlite`);
 
     console.log('Preparing Coins (ttsbot extension)');
 
@@ -50,10 +56,22 @@ module.exports = bot => {
     bot.getTopInfo = Info.prepare("SELECT *, RANK () OVER (ORDER BY level DESC, xp DESC) rank FROM info WHERE ',' || ? || ',' LIKE '%,' || user || ',%'");
     bot.getAllInfo = Info.prepare("SELECT *, RANK () OVER (ORDER BY level DESC, xp DESC) rank FROM info");
     bot.setInfo = Info.prepare("INSERT OR REPLACE INTO info (user, infotext, rep, level, xp, badges) VALUES (@user, @infotext, @rep, @level, @xp, @badges);");
+
+    console.log('Preparing Fish (ttsbot extension)');
+
+    var fishtable = Fish.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'fish';").get();
+    if (!fishtable['count(*)']) {
+      Fish.prepare("CREATE TABLE fish (user TEXT, cooldown INTEGER, common INTEGER, uncommon INTEGER, rare INTEGER, garbage INTEGER, sold TEXT, collection TEXT);").run();
+      Fish.prepare("CREATE UNIQUE INDEX idx_fish_user ON fish (user);").run();
+      Fish.pragma("synchronous = 1");
+      Fish.pragma("journal_mode = wal");
+    }
+    bot.getFish = Fish.prepare("SELECT * FROM fish WHERE user = ?");
+    bot.setFish = Fish.prepare("INSERT OR REPLACE INTO fish (user, cooldown, common, uncommon, rare, garbage, sold, collection) VALUES (@user, @cooldown, @common, @uncommon, @rare, @garbage, @sold, @collection);");
   
     bot.on('message', (msg) => {
         if(msg.author.bot) return;
-        if(Math.random() > 0.7) {
+        if(Math.random() > 0.9) {
           let coins = bot.getCoin.get(msg.author.id);
           if (!coins) {
             coins = {
@@ -64,7 +82,7 @@ module.exports = bot => {
               streaks: 0,   
             }
           }
-          coins.amount = coins.amount + Util.randomIntFromInterval(1, 7);
+          coins.amount = coins.amount + Util.randomIntFromInterval(1, 2);
           bot.setCoin.run(coins);
         }
         let score = bot.getInfo.get(msg.author.id);

@@ -6,7 +6,6 @@ class viewwhitelist extends Command {
             name: 'viewwhitelist',
             cooldown: 3,
             group:'ef',
-            channelOnly: ['guild'],
             description: 'Check the whole list.',
             details: 'View a list of all the people whitelisted.',
         })

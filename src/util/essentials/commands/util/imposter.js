@@ -24,6 +24,7 @@ class imposter extends Command {
             syntax: 'imposter <username> <command> <command arguments>',
             description: 'Pass a command under another user.',
             details: 'Pass a command under another user. Pass a valid user under the username argument under a valid loaded command.',
+            channelOnly: ['guild'],
 
             reqArgs: true,
             admin: true,
@@ -41,9 +42,10 @@ class imposter extends Command {
         var user = await Util.userParsePlus(message, args, 'user');
         user = user || message.author;
         if(!user) return message.channel.send(`Invalid user supplied.`)
-        var ms = new Discord.Message(message.client, {}, message.channel)
-        ms.author = user;
-        ms.content = `${prefixes[0]}${args[1]} ${args.slice(2).join(' ')}`;
+        var ms = new Discord.Message(message.client, undefined, message.channel);
+        ms.author=user;
+        ms.id=message.id;
+        ms.content=`${prefixes[0]}${args[1]} ${args.slice(2).join(' ')}`;
         new CommandMessage(message.client, ms);
     }
 }

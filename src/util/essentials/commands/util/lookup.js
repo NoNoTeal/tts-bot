@@ -12,6 +12,7 @@
 "use strict";
 const Command = require('./../../Command.js');
 const Discord = require('discord.js');
+const Util = require('../../Util.js');
 class lookup extends Command {
     constructor(client) {
         super(client, {
@@ -33,14 +34,9 @@ class lookup extends Command {
      * @param {Discord.Guild} guild
      */
     async run(message, args, guild) {
-        function bitNumberToArray(n) {
-            const bits = [...n.toString(2)].map(Number);
-        
-            return bits.reduce((result, bit, index) => result.concat(bit ? bits.length - index - 1 : []), []);
-        }
             try{
             var user = await message.client.api.users(args[0]).get();
-            var flags = bitNumberToArray(user.public_flags);
+            var flags = Util.bitNumberToArray(user.public_flags);
             var str = [];
             for(var badge of flags) {
                 switch(badge) {
@@ -85,7 +81,12 @@ class lookup extends Command {
                     break;   
                 }
             }
-            if(!str.length) str = ['*No Profile Badges*']
+            if(!str.length) str = ['*No Profile Badges*'];
+            var defaultProfilePicture = user.discriminator.endsWith(`0`) || user.discriminator.endsWith(`5`) ? `https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png` :
+            user.discriminator.endsWith(`1`) || user.discriminator.endsWith(`6`) ? `https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png` :
+            user.discriminator.endsWith(`2`) || user.discriminator.endsWith(`7`) ? `https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png` :
+            user.discriminator.endsWith(`3`) || user.discriminator.endsWith(`8`) ? `https://discordapp.com/assets/0e291f67c9274a1abdddeb3fd919cbaa.png` :
+            user.discriminator.endsWith(`4`) || user.discriminator.endsWith(`9`) ? `https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png` :`Not Available`;
             var embed = new Discord.MessageEmbed()
             .setTimestamp()
             .setFooter(`Used by ${message.author.tag} • This bot cannot pick up Nitro / Boosting Badges!`)
@@ -97,18 +98,8 @@ class lookup extends Command {
     Tag: **${user.username}#${user.discriminator}**
     Bot: **${user.bot ? 'Yes' : 'No'}**
     Mention: <@${user.id}>
-    Avatar: ${user.avatar ? `[Click Here](https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}?size=256)` : 
-    user.discriminator.endsWith(`0`) || user.discriminator.endsWith(`5`) ? `[Click Here](https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png)` :
-    user.discriminator.endsWith(`1`) || user.discriminator.endsWith(`6`) ? `[Click Here](https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png)` :
-    user.discriminator.endsWith(`2`) || user.discriminator.endsWith(`7`) ? `[Click Here](https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png)` :
-    user.discriminator.endsWith(`3`) || user.discriminator.endsWith(`8`) ? `[Click Here](https://discordapp.com/assets/0e291f67c9274a1abdddeb3fd919cbaa.png)` :
-    user.discriminator.endsWith(`4`) || user.discriminator.endsWith(`9`) ? `[Click Here](https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png)` :`Not Available`}`)
-            .setImage(user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}?size=256` : 
-            user.discriminator.endsWith(`0`) || user.discriminator.endsWith(`5`) ? `https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png` :
-            user.discriminator.endsWith(`1`) || user.discriminator.endsWith(`6`) ? `https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png` :
-            user.discriminator.endsWith(`2`) || user.discriminator.endsWith(`7`) ? `https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png` :
-            user.discriminator.endsWith(`3`) || user.discriminator.endsWith(`8`) ? `https://discordapp.com/assets/0e291f67c9274a1abdddeb3fd919cbaa.png` :
-            user.discriminator.endsWith(`4`) || user.discriminator.endsWith(`9`) ? `https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png` :`Not Available`)
+    Avatar: ${user.avatar ? `[Click Here](https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}?size=256)` : defaultProfilePicture}`)
+            .setImage(user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}?size=256` : defaultProfilePicture)
             message.channel.send(embed)
             } catch {message.channel.send(`User not found, here's why.
     • A user ID was not provided, get a user ID by going to \`User Settings -> Appearance (scroll down) -> Developer Mode (ON)\` and right click on someone, then press "Copy ID"

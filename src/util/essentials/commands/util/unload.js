@@ -37,7 +37,7 @@ class unload extends Command {
         if(args[1]) {
             switch(args[0].toLowerCase()) {
                 case '-g':
-                    Command.unloadGroup(message, false, args[1]);
+                    Command.unloadGroup(message, false, args.slice(1).join(' '));
                 break;
                 case '-e':
                     if(args[1].toLowerCase() !== 'confirm') {

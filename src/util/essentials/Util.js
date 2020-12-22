@@ -7,19 +7,10 @@ const { owners, prefixes } = require('./../config.json');
  */
 class Util {
     /**
-     * @param {Discord.Client} client 
-     */
-    /**
      * @typedef {number} Second
      */
-    constructor(client) {
-      /**
-       * The client that instantiated this (shortcut)
-       * @name Discord.Client
-       * @type {Discord.Client}
-       * @readonly
-       */
-      Object.defineProperty(this, 'client', { value: client });
+    constructor() {
+      throw new Error('The util class cannot be constructed.')
     };
     /**
      * Automatically sends and deletes a message for you.
@@ -33,11 +24,13 @@ class Util {
             time = 10;
         };
         msg.channel.send(content.length ? content : '*No AutoMessage Content Sent*').then(m => {
-            m.delete({timeout: time * 1000});
+          setTimeout(() => {
+            m.delete();
             if(m.guild) {
                 if(!m.guild.me.hasPermission('MANAGE_MESSAGES')) return;
                 else msg.delete({reason: 'Automatically Deleted Message from Triggering Bot.'});
             }
+          }, time*1000);
         });
     };
 
@@ -51,7 +44,34 @@ class Util {
     };
 
     /**
-     * Random chance based on number you input, chance.
+     * Converts a bit number to an array of enums
+     * @param {Number} n 
+     */
+    static bitNumberToArray(n) {
+      const bits = [...n.toString(2)].map(Number);
+  
+      return bits.reduce((result, bit, index) => result.concat(bit ? bits.length - index - 1 : []), []);
+    }
+
+    /**
+     * Splits an array into chunks.
+     * @param {any[]} arr 
+     * @param {Number} num 
+     */
+
+    static chunk(arr, num) {
+      if(!Array.isArray(arr)) return 'Not an Array';
+      if(!Number.isInteger(num)) return 'Use valid number';
+      if(num > arr.length) return 'Number needs to be lower than array length';
+      var returnedArray = [];
+      for (var i=0; i<arr.length; i+=num) {
+          returnedArray.push(arr.slice(i,i+num));
+      }
+      return returnedArray;
+    }
+
+    /**
+     * Random chance based on number you input, the range is from 1 to 1000.
      * @param {number} number 
      * @returns {boolean}
      */
@@ -105,7 +125,7 @@ class Util {
         const gen = [];
         if(isNaN(runAmount)) runAmount = 10;
         if(runAmount < 1 && runAmount > 1000) runAmount = 10;
-        for(i = 0; i < runAmount; i++) {
+        for(var i = 0; i < runAmount; i++) {
             gen.push(generate());
         };
         return gen;
@@ -158,14 +178,14 @@ class Util {
      * @param {String} dirPath 
      * @param {String[]} arrayOfFiles 
      */
-    static getLayerOfFiles(dirPath, arrayOfFiles, extension) {
+    static getLayerOfFiles(dirPath, arrayOfFiles, extension="") {
         dirPath = dirPath.split('/').filter(s=>s.length).join('/');
         var files = fs.readdirSync(dirPath)
        
         arrayOfFiles = arrayOfFiles || []
        
         files.forEach(function(file) {
-            if(!file.endsWith(extension || "") && !fs.statSync(dirPath + "/" + file).isFile()) return;
+            if(!file.endsWith(extension) || !fs.statSync(dirPath + "/" + file).isFile()) return;
             if(file.endsWith(".DS_Store")) return;
             arrayOfFiles.push(dirPath + '/' + file)
         })
@@ -183,12 +203,35 @@ class Util {
     }
 
     /**
+     * Deletes all .DS_Store files.
+     * @param {String} dirPath 
+     * @param {String[]} arrayOfFiles 
+     */
+    static deleteAllDSStore(dirPath, arrayOfFiles) {
+      dirPath = dirPath.split('/').filter(s=>s.length).join('/');
+      var files = fs.readdirSync(dirPath)
+     
+      arrayOfFiles = arrayOfFiles || []
+     
+      files.forEach(function(file) {
+        if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+          arrayOfFiles = Util.deleteAllDSStore(dirPath + "/" + file, arrayOfFiles)
+        } else {
+          if(!file.endsWith(".DS_Store") || !fs.statSync(dirPath + "/" + file).isFile()) return;
+          fs.unlinkSync(file)
+          arrayOfFiles.push(dirPath + '/' + file)
+        }
+      })
+      return arrayOfFiles;
+    }
+
+    /**
      * Gets all files in a folder.
      * @param {String} dirPath 
      * @param {String[]} arrayOfFiles 
      * @param {String} extension
      */
-    static getAllFiles(dirPath, arrayOfFiles, extension) {
+    static getAllFiles(dirPath, arrayOfFiles, extension="") {
         dirPath = dirPath.split('/').filter(s=>s.length).join('/');
         var files = fs.readdirSync(dirPath)
        
@@ -198,7 +241,7 @@ class Util {
           if (fs.statSync(dirPath + "/" + file).isDirectory()) {
             arrayOfFiles = Util.getAllFiles(dirPath + "/" + file, arrayOfFiles, extension)
           } else {
-            if(!file.endsWith(extension || "") && !fs.statSync(dirPath + "/" + file).isFile()) return;
+            if(!file.endsWith(extension) || !fs.statSync(dirPath + "/" + file).isFile()) return;
             if(file.endsWith(".DS_Store")) return;
             arrayOfFiles.push(dirPath + '/' + file)
           }
@@ -296,7 +339,7 @@ class Util {
      * Gets a user from message.
      * @param {Discord.Message} message Discord.JS message
      * @param {String[]} args Arguments from command
-     * @param {String} type Member or User: Which form do you want the user in?
+     * @param {('member'|'user')} type Member or User: Which form do you want the user in?
      * @param {Number} argNum Where is the user part in the message? (Arg. Array index)
      */
     static async userParsePlus(message, args, type, argNum = 0) {

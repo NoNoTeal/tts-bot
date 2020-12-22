@@ -6,7 +6,6 @@ class setinfo extends Command {
             name: 'setinfo',
             cooldown: 5,
             group:'tatsumaki',
-            channelOnly: ['guild'],
             syntax: `setinfo <bio>`,
             reqArgs: true,
         })

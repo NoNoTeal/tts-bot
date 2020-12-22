@@ -7,7 +7,6 @@ class checkUser extends Command {
             cooldown: 5,
             group:'ef',
             syntax: 'checkuser <name> <minimized version?> <name history?>',
-            channelOnly: ['guild'],
             description: 'Checks if a user played on a forbidden Minecraft server.',
             details: 'Checks if a user played on a forbidden Minecraft server. Defaults to Alco_Rs11',
         })

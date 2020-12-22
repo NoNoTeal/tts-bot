@@ -6,7 +6,6 @@ class tax extends Command {
     name: 'tax',
     group: 'slots',
     syntax: 'tax <amount>',
-    channelOnly: ['guild'],
     cooldown: 5,
     reqArgs: true,
     description: 'Get the tax amount, original, and amount taken off of a coin amount (helpful for gift)',

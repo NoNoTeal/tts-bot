@@ -23,6 +23,7 @@ class spoofCooldown extends Command {
             description: 'Set a user cooldown',
             aliases: ['throttle'],
             details: 'Set or clear a user cooldown.',
+            channelOnly: ['guild'],
 
             ownerOnly: true,
             private: true,

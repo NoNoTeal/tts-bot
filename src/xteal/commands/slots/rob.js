@@ -14,7 +14,7 @@ class rob extends Command {
     async run (message, args, guild) {
         const client = message.client
         var probability_chart = [
-[0,0],
+[30,0],
 [10,1],
 [5,2],
 [4,3],
@@ -54,7 +54,9 @@ const generate = () => {
           reset()
           return message.channel.send(`💳 **|** You need \`1000\` coins to rob people!`)}
           var user = await Util.userParsePlus(message, args, 'user');
-          user = user || message.author;
+        if(user.id == message.author.id) {
+            reset()
+            return message.channel.send(`💳 **|** You can't mug yourself! See \`${this.syntax}\``)}
         if(!user) {
           reset()
           return message.channel.send(`💳 **|** You didn't put a valid user! See \`${this.syntax}\``)}
@@ -99,17 +101,23 @@ const generate = () => {
         }
 
         if(tax < 0) {
-        var amount = Math.floor(score.amount * tax)
-        message.channel.send(`💳 **|** ${message.author} tried to rob ${user} and failed, being fined \`${amount * -1}\` coins.`, {allowedMentions:{parse:[],users:[],roles:[]}})
-        score.amount = score.amount + amount
+        var amount = Math.floor(score.amount > 10000 ? 10000 : score.amount * tax)
+        if(amount > score.amount) {
+          amount = score.amount
+        }
+        message.channel.send(`💳 **|** ${message.author} tried to rob ${user} and failed, being fined \`${amount}\` coins.`, {allowedMentions:{parse:[],users:[],roles:[]}})
+        score.amount -= amount;
         if(score.amount > 1000000000000) {score.amount = 1000000000000;message.client.setCoin.run(score);}
-        client.setCoin.run(score)
+        client.setCoin.run(score);
         return 
         } else {
-        var amount = Math.floor(userScore.amount * tax)
-          message.channel.send(`💳 **|** ${message.author} robbed ${user} and got \`${amount}\` coins.`, {allowedMentions:{parse:[],users:[],roles:[]}})
-          score.amount = score.amount + amount
-          userScore.amount = userScore.amount - amount
+          var amount = Math.floor(userScore.amount > 10000 ? 10000 : userScore.amount * tax)
+          if(amount > userScore.amount) {
+            amount = userScore.amount;
+          }
+          message.channel.send(`💳 **|** ${message.author} robbed ${user} and got \`${amount}\` coins.`, {allowedMentions:{parse:[],users:[],roles:[]}});
+          score.amount += amount;
+          userScore.amount -= amount;
           if(score.amount > 1000000000000) {score.amount = 1000000000000;message.client.setCoin.run(score);}
           if(userScore.amount > 1000000000000) {userScore.amount = 1000000000000;message.client.setCoin.run(userScore);}
           client.setCoin.run(score)

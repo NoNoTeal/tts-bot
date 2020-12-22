@@ -42,6 +42,7 @@ class Command {
      * @property {boolean} admin If the command cannot be disabled.
      * @property {boolean} fallback If the command is executed if a unknown command is sent,
      * @property {boolean} ownerOnly If the command can only be used by the bot owners in the botconfig.
+     * @property {boolean} disabled If the command should be disabled on startup.
      */
 
     /**
@@ -176,6 +177,13 @@ class Command {
     * @example true
     */
    this.ownerOnly = info.ownerOnly;
+
+   /**
+    * If the command should be disabled on startup.
+    * @type {boolean}
+    * @example false
+    */
+   this.disabled = info.disabled;
 	}
 
    /**
@@ -297,7 +305,8 @@ class Command {
             if(cmd.prototype instanceof Command) {
                 var cmdInfo = new cmd(msg.client);
                 if(!msg.client.path.filename.get(cmdInfo.name.toLowerCase())) msg.client.path.filename.set(cmdInfo.name.toLowerCase(), path)
-                Command.unload(msg, cmd, true);
+                if(msg.client.path.deleted.get(cmdInfo.name.toLowerCase())) continue;
+                else Command.unload(msg, cmd, true);
             } else continue;
         };
         msg.channel.send(`Unloaded ${everything ? 'everything' : `group: \`${group}\``}`);
@@ -340,7 +349,8 @@ class Command {
             if(cmd.prototype instanceof Command) {
                 var cmdInfo = new cmd(msg.client);
                 if(!msg.client.path.filename.get(cmdInfo.name.toLowerCase())) msg.client.path.filename.set(cmdInfo.name.toLowerCase(), path)
-                Command.load(msg, cmd, true);
+                if(msg.client.path.load.get(cmdInfo.name.toLowerCase())) continue;
+                else Command.load(msg, cmd, true);
             } else continue;
         };
         msg.channel.send(`Loaded ${everything ? 'everything' : `group: \`${group}\``}`);
@@ -595,13 +605,15 @@ class Command {
 
         }
         if(this.nsfw !== null) {
-            switch(this.nsfw) {
-                case true:
-                    if(!msg.channel.nsfw) return this.constructor.stop(msg, 'nsfw', this.nsfw, this);
-                break;
-                case false:
-                    if(msg.channel.nsfw) return this.constructor.stop(msg, 'nsfw', this.nsfw, this);
-                break;
+            if(msg.channel instanceof Discord.GuildChannel) {
+                switch(this.nsfw) {
+                    case true:
+                        if(!msg.channel.nsfw) return this.constructor.stop(msg, 'nsfw', this.nsfw, this);
+                    break;
+                    case false:
+                        if(msg.channel.nsfw) return this.constructor.stop(msg, 'nsfw', this.nsfw, this);
+                    break;
+                }
             }
         }
         if(this.reqArgs) {
@@ -693,14 +705,16 @@ class Command {
         var command = require(`${path.replace('src', '../..')}`);
         if(command.prototype instanceof Command) {
             command = new command(bot);
-          bot.path.load.set(command.name.toLowerCase(), command);
-          bot.path.filename.set(command.name.toLowerCase(), path)
-          if(Array.isArray(command.aliases)) {
-            command.aliases.forEach(a => {
-                aliases.push(a.toLowerCase());
-            });
-          }
-          names.push(command.name.toLowerCase());
+            if(!command.disabled) {
+                bot.path.load.set(command.name.toLowerCase(), command);
+            } else bot.path.deleted.set(command.name.toLowerCase(), command);
+            bot.path.filename.set(command.name.toLowerCase(), path)
+            if(Array.isArray(command.aliases)) {
+              command.aliases.forEach(a => {
+                  aliases.push(a.toLowerCase());
+              });
+            }
+            names.push(command.name.toLowerCase());
         } else continue;
       };
       if(find(names, aliases)) throw new TypeError(`Command names or aliases cannot match each other.`);
@@ -801,6 +815,13 @@ class Command {
                 
         if(!Util.isNull(info.ownerOnly)) {
             if(!Util.isBoolean(info.ownerOnly)) throw new TypeError(`Command(${info.name})'s ownerOnly is not a boolean.`);
+        }
+
+        if(!Util.isNull(info.disabled)) {
+            if(!Util.isBoolean(info.disabled)) throw new TypeError(`Command(${info.name})'s disabled is not a boolean.`);
+            if(!Util.isNull(info.admin)) {
+                if(info.admin == true) throw new TypeError(`Command(${info.name}) cannot be both disabled and an admin command.`);
+            }
         }
     }
 

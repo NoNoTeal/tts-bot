@@ -8,4 +8,4 @@ var Constants = require('./node_modules/discord.js/src/util/Constants.js')
  */
 Constants.DefaultOptions.ws.properties.$browser = 'Discord iOS';
 client.login(token)
-require('./src/util/essentials/Verify.js')(client)
+require('./src/util/essentials/Verify.js')(client);

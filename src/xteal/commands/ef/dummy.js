@@ -7,7 +7,6 @@ class dummy extends Command {
             cooldown: 5,
             group:'ef',
             syntax: 'fakegen <name>',
-            channelOnly: ['guild'],
             description: 'Generates a fake first join message for specified user.',
             details: 'Generates a fake first join message for specified user. Defaults to Alco_Rs11',
         })

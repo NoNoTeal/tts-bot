@@ -8,7 +8,6 @@ class mark extends Command {
             name: 'mark',
             cooldown: 3,
             group:'ef',
-            channelOnly: ['guild'],
             description: 'Mark person as a bad person.',
             details: 'Make a person fail the background check automatically. Run this command on a marked person to remove them.',
         })

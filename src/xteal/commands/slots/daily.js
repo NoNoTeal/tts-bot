@@ -1,4 +1,5 @@
 "use strict";
+const Util = require('../../../util/essentials/Util');
 const Command = require('./../../../util/essentials/Command');
 class daily extends Command {
   constructor(client) {
@@ -34,7 +35,7 @@ class daily extends Command {
 
         score.dailyLimitStart = Date.now()
 
-        var random = Math.floor(Math.random() * (300 - 200 + 1)) + 200;
+        var random = Util.randomIntFromInterval(200, 300);
         var streak = 0;
       switch(score.streak) {
       case -1:
@@ -62,14 +63,14 @@ class daily extends Command {
       case 6:
         str = `🇸 🇹 🇷 🇪 🇦 🇰
 You completed the streak!`
-        streak = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
+        streak =  Util.randomIntFromInterval(50, 100);
         score.streak = -1
         score.streaks++;
       break;
           
         }
-        var previous = score.amount
-        score.amount = score.amount + random + streak
+        var previous = score.amount;
+        score.amount += random + streak;
         if(score.amount > 1000000000000) {score.amount = 1000000000000;message.client.setCoin.run(score);}
         message.channel.send(`💳 **|** You now have **${previous}** coins + **${random}** coins ${score.streak == 6 ? `+ **${streak}** coins from streak bonus` : ``} = **${score.amount}** coins!
 ${str}`)

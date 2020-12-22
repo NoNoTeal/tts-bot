@@ -40,7 +40,7 @@ class maintenance extends Command {
             message.client.path.util.maintenance = true;
             message.client.user.setPresence({
                 activity: {
-                    name: "🛠️ Myself being worked on. Not available currently, in maintenance mode.",
+                    name: "🛠️ Maintenance mode.",
                     type: "WATCHING",
                 },
                 afk: true,

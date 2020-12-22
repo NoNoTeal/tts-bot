@@ -30,7 +30,7 @@ class give extends Command {
         }
         if(!args[1]) return message.channel.send(`You didn't supply an amount of credits, see \`${this.syntax}\``)
     var before = userScore.amount
-    userScore.amount = userScore.amount + parseInt(args[1])
+    userScore.amount += parseInt(args[1])
     if(userScore.amount > 1000000000000) {userScore.amount = 1000000000000;message.client.setCoin.run(userScore);}
     client.setCoin.run(userScore)
     message.channel.send(`**${before}** -> **${userScore.amount}**`)

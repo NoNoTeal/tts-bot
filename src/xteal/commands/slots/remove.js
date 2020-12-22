@@ -34,7 +34,7 @@ class remove extends Command {
         }
         if(!newArgs[1]) return message.channel.send(`You didn't supply an amount of coins, see \`${this.syntax}\``)
     var before = userScore.amount
-    userScore.amount = userScore.amount - parseInt(newArgs[1])
+    userScore.amount -= parseInt(newArgs[1])
     if(userScore.amount > 1000000000000) {userScore.amount = 1000000000000;message.client.setCoin.run(userScore);}
     client.setCoin.run(userScore)
     message.channel.send(`**${before}** -> **${userScore.amount}**`)

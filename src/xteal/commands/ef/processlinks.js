@@ -10,7 +10,6 @@ class pl extends Command {
             cooldown: 2,
             syntax: 'processlinks <links[]>',
             group:'ef',
-            channelOnly: ['guild'],
             reqArgs: true,
             description: 'Process links and turn it into data for the list file',
         })

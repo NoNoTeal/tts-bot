@@ -4,11 +4,35 @@ const Util = require('../../util/essentials/Util');
 const passingColors = Util.generateColor('#03ce00', '#007a34', 100);
 const failingColors = Util.generateColor('#ce0000', '#b00000', 100);
 const maybeColors = Util.generateColor('#ab4b00', '#e6e82f', 100);
+function asUUID(uuid) {
+    if (uuid.length <= 16) {
+        return "steve";
+      } else {
+        var even = parseInt(uuid[ 7], 16) ^ parseInt(uuid[15], 16) ^ parseInt(uuid[23], 16) ^ parseInt(uuid[31], 16);
+        return even ? "alex" : "steve";
+      }
+}    
+function getKeyByValue(object, value) {
+    //https://stackoverflow.com/a/28191966/10974240
+    return Object.keys(object).find(key => object[key] === value);
+}
+function minuteToTime(duration) {
+    var minutes = Math.floor(duration % 60),
+    hours =  Math.floor((duration / 60) % 24),
+    days = Math.floor((duration / 60) / 24);      
+
+    var filtered = [days ? `\`${days}\` ${days > 1 ? 'Days' : 'Day'}` : ``,hours ? `\`${hours}\` ${hours > 1 ? 'Hours' : 'Hour'}` : ``,minutes ? `\`${minutes}\` ${minutes > 1 ? 'Minutes' : 'Minute'}` : ''].filter(n => n.length);
+  
+    return filtered.length ? filtered.join(', ') : 'N/A';
+}
 module.exports.check = function(message, ign, obj, failed='Failed the Background Check.', passed='Passed the Background Check.', limitDetails=false, doNameHistory=false) {
     try{
+    delete require.cache[require.resolve('./mark.json')];
     var mark = require('./mark.json');
+    delete require.cache[require.resolve('./whitelist.json')];
     var whitelist = require('./whitelist.json');
     var fail = mark.includes(ign.toLowerCase());
+    var embed = new Discord.MessageEmbed();
     var pass = whitelist.includes(ign.toLowerCase());
     if(fail) {
         embed.setAuthor(`🚨 Is on the 'Mark' list 🚨`);
@@ -27,34 +51,22 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
             return message.channel.send('`JSON` file is being edited or doesn\'t exist. Please try again later.')
         }
     }
-    var embed = new Discord.MessageEmbed();
     var blackkeys = Object.values(obj);
     if(!blackkeys.length) return message.channel.send('No servers to check. Add some!')
     if(![].concat.apply([], blackkeys).every(id => typeof id === 'number')) return message.channel.send('All IDs must be strictly numbers. Edit `servers.js`')
-    function getKeyByValue(object, value) {
-        //https://stackoverflow.com/a/28191966/10974240
-        return Object.keys(object).find(key => object[key] === value);
-    }
-
     var progressMsg,
         encodedData,
         skinURL,
+        model,
         capeURL;
     (async function() {
         progressMsg = await message.channel.send(`Please wait...`);
     })()
-    function minuteToTime(duration) {
-        var minutes = Math.floor((duration) % 60),
-        hours = Math.floor((duration / (60)) % 60),
-        days = Math.floor((duration / (60 * 60)) % 24);
-
-        var filtered = [days ? `\`${days}\` ${days > 1 ? 'Days' : 'Day'}` : ``,hours ? `\`${hours}\` ${hours > 1 ? 'Hours' : 'Hour'}` : ``,minutes ? `\`${minutes}\` ${minutes > 1 ? 'Minutes' : 'Minute'}` : ''].filter(n => n.length);
-      
-        return filtered.length ? filtered.join(', ') : 'N/A';
-    }
         if(!ign.length) return;
         var nameAndID = '',
             pastNames = [];
+    rqNameAndUUID();
+    function rqNameAndUUID(attempts=0) {
         var check = https.get(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(ign)}?at=${Date.now()}`, {headers: {"User-Agent": `tts-bot-${Math.random().toString(2, 16).substr(0,2)}`}},
          r => {
             var data = '';
@@ -62,10 +74,22 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                 data+=d;
             })
             r.on('close', () => {
+                try {
+                    progressMsg.edit('Fetching UUID').catch(e => {});
+                } catch {};
                 try{
-                    progressMsg.edit('Fetching UUID').catch(e => {});;
+                    if(r.statusCode == 204) {
+                        return initiateAfterUUIDParse();
+                    }
                     nameAndID = JSON.parse(data);
                     ign = nameAndID.name;
+                    model = asUUID(nameAndID.id);
+                    if(nameAndID.errorMessage) {
+                        if(nameAndID.errorMessage.endsWith('is invalid')) {
+                            return message.channel.send('Name is invalid.')
+                        }
+                    }
+                    getSkins();
                         var namemcembed = new Discord.MessageEmbed()
                         .setColor([0,0,0])
                         .setTimestamp()
@@ -76,18 +100,27 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                     setTimeout(() => {
                         message.channel.send(namemcembed);
                     }, 10000);
-                }catch{
+                }catch {
                     nameAndID = {};
-                    if(!nameAndID.name) {message.channel.send(`⚠️ This user is cracked!`)};
-                }finally{
-                    getSkins();
+                    if(attempts < 3) {
+                        rqNameAndUUID(attempts++);
+                    } else if(!nameAndID.name) {
+                        message.channel.send(`Failed to fetch Mojang data. User may be cracked.`);
+                        return initiateAfterUUIDParse();
+                    };
                 }
             })
         })
         check.on('error', () => {
-            return message.channel.send('An \`HTTPS\` related error occurred. Check manually or retry: ' + `https://minecraft-statistic.net/en/player/${ign}.html`+ ' \`Failed @ Mojang Name Check\`');
+            if(attempts < 3) {
+                rqNameAndUUID(attempts++);
+            } else {
+                message.channel.send(`An \`HTTPS\` related error occurred. \`Failed @ Mojang Name Check\`. Moving on.`);
+                return initiateAfterUUIDParse();
+            }
         });
-        function getSkins() {
+    }
+        function getSkins(attempts=0) {
             var skins = https.get(`https://sessionserver.mojang.com/session/minecraft/profile/${encodeURIComponent(nameAndID.id)}`, {headers: {"User-Agent": `tts-bot-${Math.random().toString(2, 16).substr(0,2)}`}},
             r => {
                var data = '';
@@ -95,24 +128,36 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                    data+=d;
                })
                r.on('close', () => {
+                    try{
+                        progressMsg.edit('Fetching textures').catch(e => {});;
+                    } catch{}
                    try{
-                       progressMsg.edit('Fetching textures').catch(e => {});;
                        encodedData = JSON.parse(data);
                        encodedData = JSON.parse(Buffer.from(encodedData.properties[0].value, 'base64').toString());
                        skinURL = encodedData.textures["SKIN"]; 
                        capeURL = encodedData.textures["CAPE"];
-                   }catch{
-                        progressMsg.edit('Something went wrong getting the textures!').catch(e => {});;
-                   }finally{
                        doUUids();
+                   }catch{
+                    if(attempts < 3) {
+                        getSkins(attempts++);
+                    } else {
+                        progressMsg.edit('Something went wrong getting the textures!').catch(e => {});
+                        doUUids();
+                    };
                    }
                })
            })
            skins.on('error', () => {
-            message.channel.send('An \`HTTPS\` related error occurred while getting the skins. Moving on.');
+            if(attempts < 3) {
+                getSkins(attempts++);
+            } else {
+                message.channel.send('An \`HTTPS\` related error occurred while getting the skins. Moving on.');
+                doUUids();
+            };
            });
         }
-        function doUUids() {
+        function doUUids(attempts=0) {
+        if(doNameHistory) {
         var pastName = https.get(`https://api.mojang.com/user/profiles/${encodeURIComponent(nameAndID.id)}/names`, {headers: {"User-Agent": `tts-bot-${Math.random().toString(2, 16).substr(0,2)}`}},
         r => {
            var data = '';
@@ -121,7 +166,9 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
            })
            r.on('close', () => {
                try{
-                    progressMsg.edit('Fetching name history...').catch(e => {});;
+                    progressMsg.edit('Fetching name history...').catch(e => {});
+               } catch{}
+               try{
                    pastNames=JSON.parse(data).map(e => e.name);
                    if(doNameHistory) {
                     var historyName = new Discord.MessageEmbed()
@@ -134,13 +181,24 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                     }, 5000);}
                }catch{
                    pastNames = [];
-               }finally{
-                   initiateAfterUUIDParse();
+                   if(attempts < 3) {
+                        doUUids(attempts++);
+                    } else {
+                        message.channel.send('Failed to get the name history. Moving on.');
+                        initiateAfterUUIDParse();
+                    };
                }
            })
-       })
-       pastName.on('error', () => {
-       });}
+        })
+        pastName.on('error', () => {
+        if(attempts < 3) {
+            doUUids(attempts++);
+        } else {
+            message.channel.send('An \`HTTPS\` related error occurred while getting the name history. Moving on.');
+            initiateAfterUUIDParse();
+        };
+        });
+        } else initiateAfterUUIDParse();}
         function initiateAfterUUIDParse() {
         var servers = [],
             descriptions = [],
@@ -162,7 +220,9 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
             });
             response.on('end', () => {
                 try{
-                    progressMsg.edit('Fetching Statistic Sample...').catch(e => {});;
+                    progressMsg.edit('Fetching Statistic Sample...').catch(e => {});
+                }catch{};
+                try{
                     dta = JSON.parse(dta);
                     } catch {
                         return message.channel.send('Error Parsing JSON. Check manually?: ' + link + ' \`Failed @ Name Check\`')
@@ -172,10 +232,8 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                     embed.setTitle(`${ign} ${fail ? failed :`Was Not Found.`}`)
                     .setDescription('*This Player Is Not Being Monitored.*')
                     .setColor(fail ? failingColors[Math.floor(Math.random() * failingColors.length)] : maybeColors[Math.floor(Math.random() * maybeColors.length)])
-                    .setFooter('Name has to be CaSe sEnSiTiVe! (1st Check)')
+                    .setFooter('Name has to be CaSe sEnSiTiVe!')
                     .setTimestamp()
-                    skinURL ? embed.addField(`**Skin**`, skinURL.url) : '';
-                    capeURL ? embed.addField(`**Cape**`, capeURL.url) : '';
                     return message.channel.send(embed);
                 } else
         function generateEmbed() {
@@ -197,6 +255,7 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                     .setTimestamp()
                     skinURL ? embed.addField(`**Skin**`, skinURL.url) : '';
                     capeURL ? embed.addField(`**Cape**`, capeURL.url) : '';
+                    model ? embed.addField(`**Model**`, model) : '';
                     fails > 0 ? embed.addField('**Network Errors**', `Couldn't get data for \`${fails}/${serverLength}\` server(s). Please retry.`) : '';
                     return message.channel.send(embed);
                 } else {
@@ -211,12 +270,13 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                     .setFooter(`UUID: ${uuid}`)
                     skinURL ? embed.addField(`**Skin**`, skinURL.url) : '';
                     capeURL ? embed.addField(`**Cape**`, capeURL.url) : '';
+                    model ? embed.addField(`**Model**`, model) : '';
                     fails > 0 ? embed.addField('**Network Errors**', `Couldn't get data for \`${fails}/${serverLength}\` server(s). Please retry.`) : '';
                     return message.channel.send(embed);
                 }
             } else c++;
         }
-        function checkUser(badserver, serverName) {
+        function checkUser(badserver, serverName, failed=0) {
             var s = https.get({
                 hostname: 'minecraft-statistic.net', 
                 path: `/api/player/info/${ign}/${badserver}`,
@@ -230,7 +290,24 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                             str = JSON.parse(str);
                             } catch {
                                 return message.channel.send('Error Parsing JSON. Check manually?: ' + link)
+                        }
+                        if((c/serverLength) > .90) {
+                            if(!progressMsg.content.includes('90')) {
+                                progressMsg.edit('Checking Servers. \`90%\` done.')
                             }
+                        } else if((c/serverLength) > .75) {
+                            if(!progressMsg.content.includes('75')) {
+                                progressMsg.edit('Checking Servers. \`75%\` done.')
+                            }
+                        } else if((c/serverLength) > .5) {
+                            if(!progressMsg.content.includes('50')) {
+                                progressMsg.edit('Checking Servers. \`50%\` done.')
+                            }
+                        } else if((c/serverLength) > .25) {
+                            if(!progressMsg.content.includes('25')) {
+                                progressMsg.edit('Checking Servers. \`25%\` done.')
+                            }
+                        }  
                         if(str.data) {
                         if(str.data.visited_server === true) {
                             if(descriptions.findIndex(o => o.server == serverName) > -1) {
@@ -249,7 +326,11 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
                     })
                 })
                 s.on('error', () => {
-                    fails++;generateEmbed();
+                    if(failed > 2) {
+                        fails++;generateEmbed();
+                    } else {
+                        checkUser(badserver, serverName, failed++)
+                    }
                 });
         }
         if(pass) {
@@ -258,14 +339,24 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
             progressMsg.edit(`Checking Servers process OVERRIDDEN! User was on pass list!`).catch(e => {});
         } else {
             progressMsg.edit(`Checking Servers. (This may take a while!)`).catch(e => {});
-        blackkeys.forEach(badserver => {
+        var promised = [];
+        blackkeys.forEach((badserver) => {
             if(!Array.isArray(badserver)) {
-                checkUser(badserver, getKeyByValue(obj, badserver))
+                promised.push({s: badserver, n: getKeyByValue(obj, badserver), l: promised.length*200});
             } else {
                 for(var serverID of badserver) {
-                    checkUser(serverID, getKeyByValue(obj, badserver))
-                }}
+                    promised.push({s: serverID, n: getKeyByValue(obj, badserver), l: promised.length*200});
+                }
+            }
         });//badservers.forEach().
+
+        promised = Util.chunk(promised, 5)
+        for (const promisedChunk of promised) {
+            Promise.all(promisedChunk.map(c => setTimeout(() => {checkUser(c['s'], c['n'])}, c['l'])))
+        }
+
+        //checkUser(badserver, getKeyByValue(obj, badserver));
+
         }; //end for if(pass) {...} else {...} code block.
         });//response end to check if the user exists.
         });//https request to check for user.
@@ -273,8 +364,8 @@ module.exports.check = function(message, ign, obj, failed='Failed the Background
             return message.channel.send('An \`HTTPS\` related error occurred. Check manually: ' + `https://minecraft-statistic.net/en/player/${ign}.html`+ ' \`Failed @ Name Check\`');
         });
     }} catch (e) {
-        message.channel.send('An internal error occurred. JSON may be being edited... Try again later.');
+        console.log(e)
+        message.channel.send('An internal error occurred. JSON might be being edited... Try again later.');
     } finally {
     }
 };
-

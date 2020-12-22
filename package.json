@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^7.1.1",
-    "discord.js": "^12.5.1",
+    "discord.js": "github:devsnek/discord.js#interactions",
     "node-fetch": "^2.6.1",
     "node-gyp": "^6.1.0",
     "systeminformation": "^4.31.1"

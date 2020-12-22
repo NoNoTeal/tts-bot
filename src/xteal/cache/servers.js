@@ -7,6 +7,12 @@ module.exports.blacklisted = {
                 268864, //178.63.0.113 | free4.freemc.host | https://minecraft-statistic.net/api/server/info/268864
                 ],
 
+    //Soviet Union
+    "Soviet Union":[244051, //86.81.212.17 | 86.81.212.17 | https://minecraft-statistic.net/api/server/info/244051
+                    247869, //86.81.212.17 | tnsu.ddns.net | https://minecraft-statistic.net/api/server/info/247869
+                    223509, //209.58.167.178 | 209.58.167.178 | https://minecraft-statistic.net/api/server/info/223509
+                   ], 
+
     //shitty anarchy
     "Ant farm":259161, //antfarmanarchy.zapto.org
     "Arctis":249452,//104.128.71.9_25565
@@ -96,6 +102,19 @@ module.exports.blacklisted = {
     "ZimonCraft":240253, //zimon.craft.gg
     "SleepyCraft Anarchy":253794, //sleepycraft
     "PureAnarky":255896, //pureanarky.org
+    "s18Minespan":73012, //209.133.210.41 | s18.minespan.com | https://minecraft-statistic.net/api/server/info/73012
+    "ExtraMC":12741, //95.83.153.146 | 95.83.153.146 | https://minecraft-statistic.net/api/server/info/12741
+    "1.12.2 Survival":262586, //66.235.172.104 | 66.235.172.104 | https://minecraft-statistic.net/api/server/info/262586
+    "OneGrief":275715, //135.181.126.148 | f12.joinserver.ru | https://minecraft-statistic.net/api/server/info/275715
+    "GachiCraft":271244, //81.176.176.183 | 81.176.176.183 | https://minecraft-statistic.net/api/server/info/271244
+    "DuckyGrief":270752, //45.93.200.18 | 45.93.200.18 | https://minecraft-statistic.net/api/server/info/270752
+    "Burger King":250784, //51.89.152.200 | 51.89.152.200 | https://minecraft-statistic.net/api/server/info/250784
+    "SMP Cock":266702, //192.254.71.157 | 192.254.71.157 | https://minecraft-statistic.net/api/server/info/266702
+    "wtf Anarchy":259808, //51.81.242.77 | 51.81.242.77 | https://minecraft-statistic.net/api/server/info/259808
+    "MineRealms":249556, //178.63.45.95 | 178.63.45.95 | https://minecraft-statistic.net/api/server/info/249556
+    "WastelandMC":261471, //158.69.152.182 | mc.wastelandmc.xyz | https://minecraft-statistic.net/api/server/info/261471
+    "SMP FK":233225, //66.235.175.250 | 66.235.175.250 | https://minecraft-statistic.net/api/server/info/233225
+    "Upside-down Anarchy":211292, //139.99.209.76 | 139.99.209.76 | https://minecraft-statistic.net/api/server/info/211292
     
     //immature kids server
     "FreedomForever":217385, //178.32.127.167_25583 (freedomforever)
@@ -108,6 +127,7 @@ module.exports.blacklisted = {
     //TotalFreedom (FreeOP, requested by server owner.)
     "TotalFreedom":[
         2513, //64.34.165.5 | 64.34.165.5
+        9802, //64.34.190.101 | 64.34.190.101 | https://minecraft-statistic.net/api/server/info/9802
         137562, //192.99.69.234 | play.totalfreedom.me
         197030, //213.239.220.106 | 213.239.220.106
         262143, //176.9.64.37 | 176.9.64.37

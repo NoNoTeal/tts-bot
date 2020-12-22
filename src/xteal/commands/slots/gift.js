@@ -69,8 +69,8 @@ var collector = message.channel.createMessageCollector(filter, { time: 20000 });
 collector.on('collect', async (m) => {
     if(m.content.toLowerCase().includes(confirmationId)) {
     var msg = await message.channel.send(`💳 **|** Transaction Commencing!`)
-    score.amount = score.amount - finalCoin;
-    userScore.amount = userScore.amount + finalCoin;
+    score.amount -= finalCoin;
+    userScore.amount += finalCoin;
     if(score.amount > 1000000000000) {score.amount = 1000000000000;message.client.setCoin.run(score);}
     if(userScore.amount > 1000000000000) {userScore.amount = 1000000000000;message.client.setCoin.run(userScore);}
     await client.setCoin.run(score);

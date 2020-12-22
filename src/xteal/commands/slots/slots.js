@@ -6,12 +6,11 @@ class slots extends Command {
     name: 'slots',
     group: 'slots',
     syntax: 'slots <amount>',
-    channelOnly: ['guild'],
     aliases: ['slot'],
     cooldown: 5,
     description: 'Bet an amount of coins, get more or less.',
     })}
-    async run (message, args, guild) {
+    async run (message, args) {
         const client = message.client
         let score = client.getCoin.get(message.author.id);
         if (!score) {
@@ -86,7 +85,7 @@ gen.push(`➖`)
 
         var coin = bet > 1 ? 'coins' : 'coin'
 
-        score.amount = score.amount - bet
+        score.amount -= bet
         if(score.amount > 1000000000000) {score.amount = 1000000000000;message.client.setCoin.run(score);}
         client.setCoin.run(score)
         var slotMSG = await message.channel.send(
@@ -220,7 +219,7 @@ coin = final > 1 ? 'coins' : 'coin'
       
     , {allowedMentions:{parse:[],users:[],roles:[]}})
 
-    score.amount = score.amount + final
+    score.amount += final
     if(score.amount > 1000000000000) {score.amount = 1000000000000;message.client.setCoin.run(score);}
     client.setCoin.run(score)
 

@@ -41,7 +41,7 @@ class CommandMessage {
     static run(client, message) {
       if(message.author.bot) return;
         if(client.path.util.maintenance) {
-          if(!owners.includes(message.author.id)) return;
+          if(!owners.includes(message.author.id)) return message.channel.send('Bot is being worked on. Check back later.')
         }
         const regex = Util.generateRegex(message);
         const messageContent = message.content.match(regex);

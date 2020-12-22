@@ -37,7 +37,7 @@ class guildload extends Command {
         if(args[1]) {
             switch(args[0].toLowerCase()) {
                 case '-g':
-                    Command.guildLoadGroup(message, false, args[1]);
+                    Command.guildLoadGroup(message, false, args.slice(1).join(' '));
                 break;
                 case '-e':
                     if(args[1].toLowerCase() !== 'confirm') break;
@@ -48,8 +48,8 @@ class guildload extends Command {
             var check = message.client.path.load.get(args[0].toLowerCase()) || message.client.path.load.find(cmd => Array.isArray(cmd.aliases) && cmd.aliases.some(alias => alias.toLowerCase() === args[0].toLowerCase()));
             var deleted = message.client.path.deleted.get(args[0].toLowerCase()) || message.client.path.deleted.find(cmd => Array.isArray(cmd.aliases) && cmd.aliases.some(alias => alias.toLowerCase() === args[0].toLowerCase()));
             if(!check && !deleted) return message.channel.send('Command doesn\'t exist.');
-            if(!check || deleted) return message.channel.send('Command has to be globally loaded.');
-            Command.guildLoad(message, check);
+            if(!check || deleted) { message.channel.send('Command isn\'t globally loaded. The command will be guild loaded but it cannot be used.') };
+            Command.guildLoad(message, check || deleted);
         } else return;
     }
 }

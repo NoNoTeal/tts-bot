@@ -15,15 +15,17 @@ const Discord = require('discord.js');
 const { prefixes, srcDirname } = require('./../../../config.json');
 const pkg = require('./../../../../../package.json');
 const Util = require('../../Util.js');
-class help extends Command {
+class advancedhelp extends Command {
     constructor(client) {
         super(client, {
-            name: 'help',
+            name: 'commandstatuses',
             group: 'Util',
-            syntax: 'help <command/alias>',
+            syntax: 'commandstatuses <command/alias>',
             cooldown: 5,
-            description: 'Get a list of bot commands',
-            details: 'Get a list of bot commands and check detailed information about them.',
+            description: 'Help, but for the bot owner only.',
+            details: 'Get a list of bot commands and check detailed information about them. Shows privated commands.',
+            private: true,
+            ownerOnly: true,
         })
     }
     /**
@@ -89,9 +91,8 @@ class help extends Command {
         }
 
         var commands = message.client.path.load;
+        var filenames = message.client.path.filename;
         var unloaded = message.client.path.deleted;
-
-        var allCmds = commands.concat(unloaded).filter(c => c.private !== true);
         var C = 9;
     
         if(!args.length) {
@@ -110,6 +111,7 @@ class help extends Command {
                 keys = Object.keys(json.array()),
                 fc = 0,
                 cmdnames = [...json.keys()];
+        
               embed[groupKey] = new Discord.MessageEmbed()
               .setTitle(`**${message.client.user.username}** Commands`)
               .addField(`**Version**`, `${pkg.version}`)
@@ -137,8 +139,8 @@ class help extends Command {
         
                   embed[groupKey].setFooter(`Page ${groupKey.slice(4)}/${Math.ceil(keys.length / cpp)}`, message.author.avatarURL())
                 }
-                if(finalCmd.private !== true) {
-                    var s = ``;
+                var s = ``;
+                    finalCmd.private ? s+=`🅿️ ` : undefined;
                     finalCmd.ownerOnly ? s+=`🆔 ` : undefined;
                     finalCmd.admin ? s+=`🅰️ ` : undefined;
                     if(guildStatus) {
@@ -153,7 +155,6 @@ class help extends Command {
                     final[groupKey] = embed[groupKey]
                     eF[groupKey] = embed[groupKey]
                     counter++
-                }
                 fc++
                 if(fc !== keys.length) { return final }
                 else
@@ -189,70 +190,69 @@ class help extends Command {
                   const trash = m.createReactionCollector(trasfilter, { time: 60000})
                   const stop = m.createReactionCollector(stopfilter, { time: 60000})
                   
-                   back.on('collect', async (r) => {
-                       if (page === 1) return
-                      page--;
-                      m.edit(json["page" + page])
-                      if(message.guild) {
-                      if(!message.guild.me.hasPermission(`MANAGE_MESSAGES`)) return
-                      r.users.remove(message.author.id)
-                      }
-                    })
-                   fore.on('collect', async (r) => {
-                      if (page === json.length) return
-                      page++;
-                      m.edit(json["page" + page])
-                      if(message.guild) {
-                        if(!message.guild.me.hasPermission(`MANAGE_MESSAGES`)) return
-                        r.users.remove(message.author.id)
-                        }
-                   })
-                   trash.on('collect', async () => {
-                      m.delete()
-                   })
-              
-                   stop.on('collect', async () => {
-                     if(m.deleted !== false) return
-                     else
-                     if(message.guild) {
-                     if(message.guild.me.hasPermission(`MANAGE_MESSAGES`)) {
-                     m.reactions.removeAll()}
-                     trash.stop()
-                     fore.stop()
-                     back.stop()
-                     stop.stop()
-                     }
-                   })
-              
-                   setTimeout(async () => {
-                     if(m.deleted !== false) return
-                     else
-                     if(message.guild) {
+                  back.on('collect', async (r) => {
+                    if (page === 1) return
+                   page--;
+                   m.edit(json["page" + page])
+                   if(message.guild) {
+                   if(!message.guild.me.hasPermission(`MANAGE_MESSAGES`)) return
+                   r.users.remove(message.author.id)
+                   }
+                 })
+                fore.on('collect', async (r) => {
+                   if (page === json.length) return
+                   page++;
+                   m.edit(json["page" + page])
+                   if(message.guild) {
                      if(!message.guild.me.hasPermission(`MANAGE_MESSAGES`)) return
-                     m.reactions.removeAll()
+                     r.users.remove(message.author.id)
                      }
-                   }, 60000);
+                })
+                trash.on('collect', async () => {
+                   m.delete()
+                })
+           
+                stop.on('collect', async () => {
+                  if(m.deleted !== false) return
+                  else
+                  if(message.guild) {
+                  if(message.guild.me.hasPermission(`MANAGE_MESSAGES`)) {
+                  m.reactions.removeAll()}
+                  trash.stop()
+                  fore.stop()
+                  back.stop()
+                  stop.stop()
+                  }
+                })
+           
+                setTimeout(async () => {
+                  if(m.deleted !== false) return
+                  else
+                  if(message.guild) {
+                  if(!message.guild.me.hasPermission(`MANAGE_MESSAGES`)) return
+                  m.reactions.removeAll()
+                  }
+                }, 60000);
               
               })}
-              commandList(allCmds) 
+              commandList(filenames) 
         } else {
-            var tempbed = '*No Command Found*'
-            var cmd = message.client.path.load.get(args.join(' ')) || message.client.path.load.find(cmd => Array.isArray(cmd.aliases) && cmd.aliases.some(alias => alias.toLowerCase() === args.join(' ').toLowerCase()));
-            var disabledCmd = message.client.path.deleted.get(args.join(' ')) || message.client.path.deleted.find(cmd => Array.isArray(cmd.aliases) && cmd.aliases.some(alias => alias.toLowerCase() === args.join(' ').toLowerCase()));
-            if(!cmd && !disabledCmd) return message.channel.send(tempbed);
-            if(message.guild) {
-            var guildStatus = message.client.getGuildCommand.get(message.guild.id, cmd ? cmd.name.toLowerCase() : disabledCmd.name.toLowerCase());
-            }
-            cmd = cmd || disabledCmd;
-            if(cmd.private) return message.channel.send(tempbed);
-            var status = '';
-            if(guildStatus) {
-                if(guildStatus.disabled == 1) {
-                    status+=`Guild Disabled | `;
-            }}
-            tempbed = new Discord.MessageEmbed()
-            .setTitle(`${status}**${cmd.name}** Information`)
-    .setDescription(`
+    var tempbed = '*No Command Found*'
+    var cmd = message.client.path.load.get(args.join(' ')) || message.client.path.load.find(cmd => Array.isArray(cmd.aliases) && cmd.aliases.some(alias => alias.toLowerCase() === args.join(' ').toLowerCase()));
+    var disabledCmd = message.client.path.deleted.get(args.join(' ')) || message.client.path.deleted.find(cmd => Array.isArray(cmd.aliases) && cmd.aliases.some(alias => alias.toLowerCase() === args.join(' ').toLowerCase()));
+    if(!cmd && !disabledCmd) return message.channel.send(tempbed);
+    if(message.guild) {
+        var guildStatus = message.client.getGuildCommand.get(message.guild.id, cmd ? cmd.name.toLowerCase() : disabledCmd.name.toLowerCase());
+    }
+    cmd = cmd || disabledCmd;
+    var status = '';
+    if(guildStatus) {
+        if(guildStatus.disabled == 1) {
+            status+=`Guild Disabled | `;
+    }}
+    tempbed = new Discord.MessageEmbed()
+    .setTitle(`${status}**${cmd.name}** Information`)
+.setDescription(`
 Under ${cmd.group ? '*' + cmd.group + '*' : '*n/a*'}
 ${cmd.syntax ? '`' + cmd.syntax + '`' : '`No Syntax Provided`'}
 **Cooldown**: ${cmd.cooldown ? cooldown(cmd) : ''}
@@ -271,17 +271,17 @@ ${cmd.nsfw ? '**NSFW**: ' + cmd.nsfw == false ? '*Use Outside of NSFW Channels*'
 Path:
 \`${message.client.path.filename.get(cmd.name.toLowerCase()).split(`./src/${srcDirname}/commands/`).join('')}\`
 `)
-    .setTimestamp()
-    if (typeof cmd.aliases !== 'undefined') {
-        tempbed.addField('**Aliases**', `\`${cmd.aliases.join('`, `')}\``, true);
-    }
-    if (typeof cmd.requires !== 'undefined') {
-        tempbed.addField('**Permissions**', `${cmd.requires.join('`, ').slice(0, 128)}`, true);
-    }
-    if (typeof cmd.userRequires !== 'undefined') {
-        tempbed.addField('**User Permissions**', `${cmd.userRequires.join('`, ').slice(0, 128)}`, true);
-    }
-    message.channel.send(tempbed)
+.setTimestamp()
+if (typeof cmd.aliases !== 'undefined') {
+tempbed.addField('**Aliases**', `\`${cmd.aliases.join('`, `')}\``, true);
+}
+if (typeof cmd.requires !== 'undefined') {
+tempbed.addField('**Permissions**', `${cmd.requires.join('`, ').slice(0, 128)}`, true);
+}
+if (typeof cmd.userRequires !== 'undefined') {
+tempbed.addField('**User Permissions**', `${cmd.userRequires.join('`, ').slice(0, 128)}`, true);
+}
+message.channel.send(tempbed)
     }}
 }
-module.exports = help;
+module.exports = advancedhelp;
